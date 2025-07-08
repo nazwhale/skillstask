@@ -143,3 +143,7 @@
   - Enjoy is blue, Good is green, making it easy to tell which phase you're in
 - Updated the 'cards left' badge color to match the current phase in src/App.jsx
   - Blue for Enjoy phase, green for Good phase, for better visual feedback
+
+- Added an 'emoji' property to each skill object in src/data/skills.js for visual distinction.
+- Updated src/App.jsx to render the emoji before the skill name on the main card and mini stack.
+- Updated src/components/SkillQuadrantsSummary.jsx to render the emoji before the skill name in the summary quadrant lists.

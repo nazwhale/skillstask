@@ -42,9 +42,11 @@ function decodeBase64(str) {
 }
 
 /* ----------------------- Tiny components ------------------------ */
-const ProgressBar = ({ label, percent, active, color }) => (
+const ProgressBar = ({ label, percent, active, color, emoji }) => (
     <div className="w-32">
-        <p className="text-[10px] text-center mb-0.5 font-medium tracking-wide">{label}</p>
+        <p className="text-[10px] text-center mb-0.5 font-medium tracking-wide">
+            {emoji} {label}
+        </p>
         <div className="w-full h-2 rounded bg-gray-300 overflow-hidden">
             <div
                 style={{ width: `${percent}%` }}
@@ -219,8 +221,8 @@ export default function SkillSorter() {
                 </h1>
                 <p className="text-xs text-gray-500">Press ← for NO &nbsp;|&nbsp; → for YES</p>
                 <div className="flex gap-4 mt-1">
-                    <ProgressBar label="Enjoy" percent={likePct} active={stage === 'round1'} color="bg-blue-500" />
-                    <ProgressBar label="Good" percent={goodPct} active={stage === 'round2'} color="bg-green-500" />
+                    <ProgressBar label="Enjoy" percent={likePct} active={stage === 'round1'} color="bg-blue-500" emoji="😊" />
+                    <ProgressBar label="Good" percent={goodPct} active={stage === 'round2'} color="bg-green-500" emoji="👍" />
                 </div>
             </div>
 
@@ -248,7 +250,7 @@ export default function SkillSorter() {
                         }}
                     >
                         <Card className="w-64 rounded-xl shadow-md bg-white/80">
-                            <CardContent className="p-3 text-xs text-center">{c.name}</CardContent>
+                            <CardContent className="p-3 text-xs text-center">{c.emoji} {c.name}</CardContent>
                         </Card>
                     </motion.div>
                 ))}
@@ -281,10 +283,13 @@ export default function SkillSorter() {
                             : decision === 'no'
                                 ? 'ring-4 ring-red-400'
                                 : 'ring-0'
+                            } ${stage === 'round1'
+                                ? 'shadow-[0_0_24px_4px_rgba(59,130,246,0.15)] shadow-blue-400/40' // blue glow for Enjoy
+                                : 'shadow-[0_0_24px_4px_rgba(34,197,94,0.18)] shadow-green-400/40' // green glow for Good
                             }`}
                     >
                         <CardContent className="p-6 flex flex-col gap-2">
-                            <h2 className="text-lg font-bold text-center">{card.name}</h2>
+                            <h2 className="text-lg font-bold text-center">{card.emoji} {card.name}</h2>
                         </CardContent>
                     </Card>
                 </motion.div>
@@ -293,7 +298,7 @@ export default function SkillSorter() {
             {/* Static card description at bottom center */}
             {card && (
                 <div className="fixed bottom-16 left-1/2 -translate-x-1/2 w-full flex justify-center pointer-events-none z-10">
-                    <div className="bg-white/80 text-gray-700 text-base px-6 py-3 rounded-xl shadow max-w-xl text-center">
+                    <div className="bg-white/80 text-gray-700 text-xl px-8 py-4 rounded-xl shadow max-w-xl text-center border border-gray-200">
                         {card.description}
                     </div>
                 </div>

@@ -38,8 +38,8 @@ const Quadrant = ({ title, subtitle, items, color }) => {
             <p className="text-xs text-center text-gray-500 mb-2">{subtitle}</p>
             {items.length ? (
                 <ul className="text-sm space-y-1 max-h-48 overflow-y-auto">
-                    {items.map(({ name }) => (
-                        <li key={name}>{name}</li>
+                    {items.map(({ name, emoji }) => (
+                        <li key={name}>{emoji} {name}</li>
                     ))}
                 </ul>
             ) : (
