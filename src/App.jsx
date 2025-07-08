@@ -391,7 +391,7 @@ export default function SkillSorter() {
                                 }
                     }
                     transition={{
-                        duration: decision ? (0.8 - (powerLevel * 0.006)) : 4,
+                        duration: decision ? (1.5 - (powerLevel * 0.013)) : 4,
                         ease: decision ? (powerLevel > 50 ? "easeIn" : "easeOut") : "easeOut"
                     }}
                     className="absolute top-0 left-1/2"
