@@ -217,16 +217,16 @@ export default function SkillSorter() {
             {card && (
                 <motion.div
                     key={`${card.name}-${stage}-${index}`}
-                    initial={{ y: -250, x: offsetX, opacity: 0.4, rotate: 0 }}
+                    initial={{ y: -250, x: '-50%', opacity: 0.4, rotate: 0 }}
                     animate={
                         decision === 'yes'
                             ? { x: 500, rotate: 20, opacity: 0 }
                             : decision === 'no'
                                 ? { x: -500, rotate: -20, opacity: 0 }
-                                : { y: 500, opacity: 1, rotate: 0 }
+                                : { y: 500, x: `calc(${offsetX}px - 50%)`, opacity: 1, rotate: 0 }
                     }
                     transition={{ duration: decision ? 0.4 : 4, ease: 'easeOut' }}
-                    className="absolute top-0 left-1/2 -translate-x-1/2"
+                    className="absolute top-0 left-1/2"
                     onClick={() => !decision && handleVote(true)}
                 >
                     <Card

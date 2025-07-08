@@ -41,3 +41,20 @@
   - Moved useWindowSize hook to always be called at the top level of the SkillSorter component in src/App.jsx
   - Now only uses window size values conditionally, preventing violation of the Rules of Hooks
   - This resolves the 'Rendered more hooks than during the previous render' error after answering all cards
+
+## Card Centering Fix
+- Fixed the falling card's horizontal alignment so it now appears perfectly centered on the screen
+- Updated the motion.div in `src/App.jsx` to use `left: 50%` and `transform: translateX(-50%)` for true centering
+
+## Card Centering Fix (Follow-up)
+- Removed the inline `style={{ transform: 'translateX(-50%)' }}` from the card's motion.div in `src/App.jsx`
+- Now only using Tailwind's `-translate-x-1/2` class for centering, allowing Framer Motion's `x` animation to work correctly
+
+## Card Centering Fix (True Middle)
+- Updated the card's motion.div in `src/App.jsx` so the initial x position is 0 (true center)
+- Now the random offsetX is only applied in the animate prop when the card is falling, ensuring it falls from the true middle and lands with horizontal variation
+
+## Card Centering Fix (Framer Motion Only)
+- Switched to using only Framer Motion for horizontal centering and offset of the card in `src/App.jsx`
+- Removed `-translate-x-1/2` from the className and used `x: '-50%'` in initial and `x: calc(${offsetX}px - 50%)` in animate for the falling state
+- This avoids transform order conflicts and ensures the card falls from the true center
