@@ -95,3 +95,19 @@
   - This ensures that the app starts fresh and does not reload shared data from the URL.
   - Modified the `restart` function to also reset `summaryOverride` to null.
   - This ensures that after starting over from a shared link, the app does not use old summary data and a new run is truly fresh.
+
+## Skill Quadrants Summary Refactoring
+- **Created `src/components/SkillQuadrantsSummary.jsx`**: Extracted the entire summary screen logic and UI into its own dedicated component
+- **Moved components and logic**:
+  - Quadrant component (with color-coded rings)
+  - useWindowSize hook for confetti sizing
+  - encodeBase64 helper function for shareable links
+  - Shareable link generation and copy functionality
+  - Confetti animation and celebration effects
+- **Updated `src/App.jsx`**:
+  - Removed duplicated summary screen code (Quadrant component, shareable link logic, confetti)
+  - Added import for SkillQuadrantsSummary component
+  - Simplified summary screen rendering to just return `<SkillQuadrantsSummary summary={summary} onRestart={restart} />`
+  - Removed unused imports (Confetti)
+- **Improved code organization**: Summary screen is now a clean, reusable component with clear props interface
+- **Maintained all functionality**: Confetti, shareable links, quadrant animations, and restart functionality all preserved

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import Confetti from 'react-confetti';
 import { Card, CardContent } from './components/ui/card';
 import { Button } from './components/ui/button';
+import SkillQuadrantsSummary from './components/SkillQuadrantsSummary';
 import { skills } from './data/skills';
 
 /*****************************************************************
@@ -53,34 +53,6 @@ const ProgressBar = ({ label, percent, active }) => (
         </div>
     </div>
 );
-
-const Quadrant = ({ title, subtitle, items, color }) => {
-    const ring = {
-        green: 'ring-green-400',
-        blue: 'ring-blue-400',
-        amber: 'ring-amber-400',
-        red: 'ring-red-400'
-    }[color] || 'ring-gray-300';
-
-    return (
-        <motion.div
-            variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
-            className={`bg-white rounded-2xl shadow p-4 ring-4 ${ring}`}
-        >
-            <h2 className="text-lg font-bold text-center mb-1">{title}</h2>
-            <p className="text-xs text-center text-gray-500 mb-2">{subtitle}</p>
-            {items.length ? (
-                <ul className="text-sm space-y-1 max-h-48 overflow-y-auto">
-                    {items.map(({ name }) => (
-                        <li key={name}>{name}</li>
-                    ))}
-                </ul>
-            ) : (
-                <p className="text-xs italic text-center text-gray-400">(none chosen)</p>
-            )}
-        </motion.div>
-    );
-};
 
 /* -------------------------- Main app --------------------------- */
 export default function SkillSorter() {
@@ -215,33 +187,7 @@ export default function SkillSorter() {
         };
     }, [stage, deck, likeMap, goodMap, summaryOverride]);
 
-    // Shareable link logic
-    const getShareUrl = () => {
-        if (!summary) return window.location.href;
-        // Only use names for compactness
-        const data = JSON.stringify({
-            superpowers: summary.superpowers,
-            growth: summary.growth,
-            burnout: summary.burnout,
-            avoid: summary.avoid
-        });
-        const encoded = encodeBase64(data);
-        const base = window.location.origin + window.location.pathname;
-        return `${base}?data=${encoded}`;
-    };
-    const handleCopyLink = async () => {
-        const url = getShareUrl();
-        try {
-            await navigator.clipboard.writeText(url);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1200);
-        } catch {
-            alert('Failed to copy link');
-        }
-    };
-    const [copied, setCopied] = useState(false);
-
-    /* ------------------------ Summary screen --------------------- */
+    /* ------------------------ Error screen ----------------------- */
     if (stage === 'error') {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
@@ -252,43 +198,9 @@ export default function SkillSorter() {
         );
     }
 
+    /* ------------------------ Summary screen --------------------- */
     if (stage === 'summary' && summary) {
-        // Only use windowSize values if needed
-        const { width, height } = windowSize;
-        return (
-            <div className="min-h-screen relative flex flex-col items-center gap-8 p-6 bg-slate-50 overflow-hidden">
-                {width > 0 && (
-                    <Confetti width={width} height={height} recycle={false} numberOfPieces={280} gravity={0.25} />
-                )}
-                <motion.h1
-                    initial={{ scale: 0.8, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: 'spring', stiffness: 120 }}
-                    className="text-4xl font-extrabold text-center"
-                >
-                    Your Skill Quadrants
-                </motion.h1>
-                <motion.div
-                    className="grid grid-cols-2 gap-6 max-w-5xl w-full"
-                    initial="hidden"
-                    animate="visible"
-                    variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
-                >
-                    <Quadrant title="Superpowers" subtitle="Love & Good" items={summary.likeGood || []} color="green" />
-                    <Quadrant title="Growth Zone" subtitle="Love & Bad" items={summary.likeBad || []} color="blue" />
-                    <Quadrant title="Burnout Risk" subtitle="Hate & Good" items={summary.hateGood || []} color="amber" />
-                    <Quadrant title="Delegate / Avoid" subtitle="Hate & Bad" items={summary.hateBad || []} color="red" />
-                </motion.div>
-                <div className="flex flex-row items-center gap-3 mt-2">
-                    <Button onClick={handleCopyLink}>
-                        {copied ? '✓ Link copied!' : '🔗 Copy Shareable Link'}
-                    </Button>
-                    <Button onClick={restart} variant="outline">
-                        ↻ Do it again
-                    </Button>
-                </div>
-            </div>
-        );
+        return <SkillQuadrantsSummary summary={summary} onRestart={restart} />;
     }
 
     /* ------------------------ Sorting screen --------------------- */
