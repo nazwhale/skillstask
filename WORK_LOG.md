@@ -111,3 +111,35 @@
   - Removed unused imports (Confetti)
 - **Improved code organization**: Summary screen is now a clean, reusable component with clear props interface
 - **Maintained all functionality**: Confetti, shareable links, quadrant animations, and restart functionality all preserved
+
+- Added MINI_STACK_SIZE constant and upcomingCards variable to SkillSorter in src/App.jsx
+  - This prepares the component to display a mini stack of the next 4 cards after the current card
+  - No UI changes yet; just data extraction for the upcoming stack
+- Added mini stack UI to the sorting screen in src/App.jsx
+  - Renders the next 4 upcoming cards as smaller, offset cards behind the main card
+  - Uses absolute positioning, scaling, and fading for a stacked visual effect
+  - Each mini card shows only the card name and is non-interactive
+- Added a 'cards left' counter below the mini stack in src/App.jsx
+  - Displays the number of cards remaining in the current round as a small badge
+  - Placed below the mini stack for extra clarity and motivation
+- Added Framer Motion animation to the mini stack in src/App.jsx
+  - Each mini card now animates its position, scale, and opacity as the stack shifts forward
+  - Creates a smooth transition effect when a card is removed, enhancing visual feedback
+- Fixed the mini stack's vertical position in src/App.jsx
+  - Adjusted top and translate-y so the stack is visually centered behind the main card
+  - Used the same approach as previous card centering fixes for consistency
+- Fixed the mini stack's position to match the main card's centering logic in src/App.jsx
+  - Changed the mini stack container to use 'absolute top-0 left-1/2 -translate-x-1/2' for perfect alignment
+  - Removed vertical translation and top-1/2, so the stack sits directly behind the main card
+- Fixed mini stack alignment behind the main card in src/App.jsx
+  - Introduced BASE_Y to match the main card's default y position
+  - Each mini card's y is now BASE_Y + i * 12, so the stack visually aligns with the main card regardless of screen size
+- Added static card description at the bottom center of the screen in src/App.jsx
+  - Displays the current card's description in a styled box for better readability while the card is animating
+  - Only shown when a card is active (not on summary or error screens)
+- Removed the card subheader (description) from the card itself in src/App.jsx
+  - The description now only appears as static text at the bottom of the screen
+- Updated Enjoy and Good progress bars to have visually distinct colors in src/App.jsx
+  - Enjoy is blue, Good is green, making it easy to tell which phase you're in
+- Updated the 'cards left' badge color to match the current phase in src/App.jsx
+  - Blue for Enjoy phase, green for Good phase, for better visual feedback

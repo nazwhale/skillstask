@@ -42,13 +42,13 @@ function decodeBase64(str) {
 }
 
 /* ----------------------- Tiny components ------------------------ */
-const ProgressBar = ({ label, percent, active }) => (
+const ProgressBar = ({ label, percent, active, color }) => (
     <div className="w-32">
         <p className="text-[10px] text-center mb-0.5 font-medium tracking-wide">{label}</p>
         <div className="w-full h-2 rounded bg-gray-300 overflow-hidden">
             <div
                 style={{ width: `${percent}%` }}
-                className={`h-full transition-all duration-300 ${active ? 'bg-blue-500' : 'bg-blue-400/40'}`}
+                className={`h-full transition-all duration-300 ${active ? color : 'bg-blue-400/40'}`}
             />
         </div>
     </div>
@@ -62,6 +62,13 @@ export default function SkillSorter() {
     const [goodMap, setGood] = useState({});
     const [deck, setDeck] = useState(() => shuffle(skills));
     const [decision, setDecision] = useState(null); // null | 'yes' | 'no'
+
+    // Mini stack size for upcoming cards
+    const MINI_STACK_SIZE = 4;
+    // Get the next MINI_STACK_SIZE cards after the current index
+    const upcomingCards = deck.slice(index + 1, index + 1 + MINI_STACK_SIZE);
+    // Base Y position to align mini stack with main card
+    const BASE_Y = 500;
 
     // Always call useWindowSize at the top level to avoid hook order issues
     // Only use its values when needed
@@ -212,8 +219,44 @@ export default function SkillSorter() {
                 </h1>
                 <p className="text-xs text-gray-500">Press ← for NO &nbsp;|&nbsp; → for YES</p>
                 <div className="flex gap-4 mt-1">
-                    <ProgressBar label="Enjoy" percent={likePct} active={stage === 'round1'} />
-                    <ProgressBar label="Good" percent={goodPct} active={stage === 'round2'} />
+                    <ProgressBar label="Enjoy" percent={likePct} active={stage === 'round1'} color="bg-blue-500" />
+                    <ProgressBar label="Good" percent={goodPct} active={stage === 'round2'} color="bg-green-500" />
+                </div>
+            </div>
+
+            {/* Mini stack of upcoming cards */}
+            <div className="absolute top-0 left-1/2 w-72 h-44 -translate-x-1/2 pointer-events-none z-0">
+                {upcomingCards.map((c, i) => (
+                    <motion.div
+                        key={c.name}
+                        className="absolute left-1/2 top-0"
+                        initial={{
+                            scale: 0.92 - i * 0.08,
+                            y: BASE_Y + i * 12,
+                            opacity: 0.5 - i * 0.1,
+                        }}
+                        animate={{
+                            scale: 0.92 - i * 0.08,
+                            y: BASE_Y + i * 12,
+                            opacity: 0.5 - i * 0.1,
+                        }}
+                        transition={{ duration: 0.4, ease: 'easeOut' }}
+                        style={{
+                            transform: `translateX(-50%)`,
+                            zIndex: i,
+                            pointerEvents: 'none',
+                        }}
+                    >
+                        <Card className="w-64 rounded-xl shadow-md bg-white/80">
+                            <CardContent className="p-3 text-xs text-center">{c.name}</CardContent>
+                        </Card>
+                    </motion.div>
+                ))}
+                {/* Cards left counter */}
+                <div className="absolute left-1/2 bottom-0 -translate-x-1/2 mb-2">
+                    <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full shadow-sm ${stage === 'round2' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {total - index - 1} card{total - index - 1 === 1 ? '' : 's'} left
+                    </span>
                 </div>
             </div>
 
@@ -242,10 +285,18 @@ export default function SkillSorter() {
                     >
                         <CardContent className="p-6 flex flex-col gap-2">
                             <h2 className="text-lg font-bold text-center">{card.name}</h2>
-                            <p className="text-sm text-center text-gray-600">{card.description}</p>
                         </CardContent>
                     </Card>
                 </motion.div>
+            )}
+
+            {/* Static card description at bottom center */}
+            {card && (
+                <div className="fixed bottom-16 left-1/2 -translate-x-1/2 w-full flex justify-center pointer-events-none z-10">
+                    <div className="bg-white/80 text-gray-700 text-base px-6 py-3 rounded-xl shadow max-w-xl text-center">
+                        {card.description}
+                    </div>
+                </div>
             )}
         </div>
     );
