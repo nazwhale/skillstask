@@ -147,3 +147,60 @@
 - Added an 'emoji' property to each skill object in src/data/skills.js for visual distinction.
 - Updated src/App.jsx to render the emoji before the skill name on the main card and mini stack.
 - Updated src/components/SkillQuadrantsSummary.jsx to render the emoji before the skill name in the summary quadrant lists.
+
+## Variable Speed Card Flying with Power Bar System
+- **Created PowerBar component** (`src/components/ui/PowerBar.jsx`):
+  - Modern power meter with gradient fill (blue to red)
+  - Smooth animations with Framer Motion
+  - Shows power percentage and fills up during key press
+  - Positioned above card description with backdrop blur
+- **Enhanced keyboard input system** in `src/App.jsx`:
+  - Replaced simple keydown with keydown/keyup tracking
+  - Added press duration calculation (0-1000ms for full power)
+  - Real-time power level updates at 60fps during key press
+  - Power level affects animation speed and visual effects
+- **Variable animation speeds**:
+  - Short press (< 300ms): Slow fly-off (0.8s duration)
+  - Long press (≥ 300ms): Fast fly-off (0.2s duration)
+  - Linear interpolation between speeds based on power level
+  - Enhanced rotation and scale effects based on power
+- **Visual feedback enhancements**:
+  - Card glows and scales during power charging
+  - Rotation intensity increases with power level
+  - Dynamic shadow effects that intensify with power
+  - Smooth transitions between different power states
+- **Updated user instructions**:
+  - Changed from "Press" to "Hold" to indicate new interaction
+  - Added "(longer = faster!)" hint for power system
+- **State management improvements**:
+  - Added power system state variables (pressStart, pressDuration, isPressing, powerLevel)
+  - Proper cleanup of power state when advancing cards or restarting
+  - Reset power system when moving between rounds
+
+## Intensity Tracking and Sorting System
+- **Added intensity state management** in `src/App.jsx`:
+  - Added `likeIntensity` and `goodIntensity` state objects to store power levels
+  - Updated `handleVote` function to save power level as intensity value
+  - Power level (0-100) represents how strongly user feels about each skill
+- **Enhanced summary data structure**:
+  - Added intensity data to summary object with enjoy/good/total values
+  - Each skill now tracks both Enjoy and Good intensity separately
+  - Total intensity calculated as sum of both values for overall strength
+- **Updated URL sharing system**:
+  - Modified `getShareUrl` in `SkillQuadrantsSummary.jsx` to include intensity data
+  - Updated URL loading logic to restore intensity values from shared links
+  - Intensity data is now preserved when sharing results
+- **Enhanced quadrant display**:
+  - Updated `Quadrant` component to accept and display intensity data
+  - Skills are now sorted by total intensity (highest first) within each quadrant
+  - Added intensity percentage display with color coding:
+    - Red (80%+): Very strong feelings
+    - Orange (60-79%): Strong feelings  
+    - Yellow (40-59%): Moderate feelings
+    - Blue (20-39%): Mild feelings
+    - Gray (0-19%): Weak feelings
+- **Improved user experience**:
+  - Users can now see how strongly they feel about each skill
+  - Most impactful skills appear at the top of each quadrant
+  - Visual intensity indicators help identify key strengths and weaknesses
+  - Shared links preserve the emotional intensity of decisions

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from './components/ui/card';
 import { Button } from './components/ui/button';
+import { PowerBar } from './components/ui/PowerBar';
 import SkillQuadrantsSummary from './components/SkillQuadrantsSummary';
 import { skills } from './data/skills';
 
@@ -62,8 +63,16 @@ export default function SkillSorter() {
     const [index, setIndex] = useState(0);
     const [likeMap, setLike] = useState({});
     const [goodMap, setGood] = useState({});
+    const [likeIntensity, setLikeIntensity] = useState({}); // Store intensity for Enjoy decisions
+    const [goodIntensity, setGoodIntensity] = useState({}); // Store intensity for Good decisions
     const [deck, setDeck] = useState(() => shuffle(skills));
     const [decision, setDecision] = useState(null); // null | 'yes' | 'no'
+
+    // Power system state
+    const [pressStart, setPressStart] = useState(null);
+    const [pressDuration, setPressDuration] = useState(0);
+    const [isPressing, setIsPressing] = useState(false);
+    const [powerLevel, setPowerLevel] = useState(0);
 
     // Mini stack size for upcoming cards
     const MINI_STACK_SIZE = 4;
@@ -100,6 +109,23 @@ export default function SkillSorter() {
                 ) {
                     // Hydrate skill names to full objects for quadrant display
                     const hydrate = (names) => skills.filter(s => names.includes(s.name));
+
+                    // Restore intensity data if available
+                    if (parsed.intensity) {
+                        const intensity = parsed.intensity;
+                        const likeInt = {}, goodInt = {};
+
+                        // Extract intensity values for each skill
+                        Object.keys(intensity).forEach(skillName => {
+                            const skillIntensity = intensity[skillName];
+                            if (skillIntensity.enjoy !== undefined) likeInt[skillName] = skillIntensity.enjoy;
+                            if (skillIntensity.good !== undefined) goodInt[skillName] = skillIntensity.good;
+                        });
+
+                        setLikeIntensity(likeInt);
+                        setGoodIntensity(goodInt);
+                    }
+
                     setStage('summary');
                     setSummaryOverride({
                         ...parsed,
@@ -119,19 +145,69 @@ export default function SkillSorter() {
 
     /* ----------------------- Keyboard input ----------------------- */
     useEffect(() => {
-        const onKey = (e) => {
+        const onKeyDown = (e) => {
             if (decision || stage === 'summary') return;
-            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') handleVote(e.key === 'ArrowRight');
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                if (!isPressing) {
+                    setPressStart(Date.now());
+                    setIsPressing(true);
+                    setPowerLevel(0);
+                }
+            }
         };
-        window.addEventListener('keydown', onKey);
-        return () => window.removeEventListener('keydown', onKey);
-    }, [decision, stage, card]);
+
+        const onKeyUp = (e) => {
+            if (decision || stage === 'summary') return;
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                if (isPressing) {
+                    const duration = Date.now() - pressStart;
+                    setPressDuration(duration);
+                    setIsPressing(false);
+                    setPressStart(null);
+
+                    // Calculate final power level (0-100)
+                    const maxDuration = 1000; // 1 second for full power
+                    const finalPower = Math.min((duration / maxDuration) * 100, 100);
+                    setPowerLevel(finalPower);
+
+                    // Trigger vote with power level
+                    handleVote(e.key === 'ArrowRight', finalPower);
+                }
+            }
+        };
+
+        window.addEventListener('keydown', onKeyDown);
+        window.addEventListener('keyup', onKeyUp);
+        return () => {
+            window.removeEventListener('keydown', onKeyDown);
+            window.removeEventListener('keyup', onKeyUp);
+        };
+    }, [decision, stage, card, isPressing, pressStart]);
+
+    // Update power level during press
+    useEffect(() => {
+        if (!isPressing || !pressStart) return;
+
+        const interval = setInterval(() => {
+            const duration = Date.now() - pressStart;
+            const maxDuration = 1000; // 1 second for full power
+            const currentPower = Math.min((duration / maxDuration) * 100, 100);
+            setPowerLevel(currentPower);
+        }, 16); // ~60fps updates
+
+        return () => clearInterval(interval);
+    }, [isPressing, pressStart]);
 
     const handleVote = useCallback(
-        (yes) => {
+        (yes, power = 0) => {
             if (!card) return;
-            if (stage === 'round1') setLike((m) => ({ ...m, [card.name]: yes }));
-            else setGood((m) => ({ ...m, [card.name]: yes }));
+            if (stage === 'round1') {
+                setLike((m) => ({ ...m, [card.name]: yes }));
+                setLikeIntensity((m) => ({ ...m, [card.name]: power }));
+            } else {
+                setGood((m) => ({ ...m, [card.name]: yes }));
+                setGoodIntensity((m) => ({ ...m, [card.name]: power }));
+            }
             setDecision(yes ? 'yes' : 'no');
         },
         [card, stage]
@@ -140,6 +216,10 @@ export default function SkillSorter() {
     /* --------------- advance after swipe animation --------------- */
     const advance = useCallback(() => {
         setDecision(null);
+        setPowerLevel(0);
+        setIsPressing(false);
+        setPressStart(null);
+        setPressDuration(0);
         if (index + 1 < total) setIndex((i) => i + 1);
         else if (stage === 'round1') {
             setStage('round2');
@@ -160,10 +240,16 @@ export default function SkillSorter() {
         setDeck(shuffle(skills));
         setLike({});
         setGood({});
+        setLikeIntensity({});
+        setGoodIntensity({});
         setStage('round1');
         setIndex(0);
         setDecision(null);
         setSummaryOverride(null); // Reset summary override so new run is fresh
+        setPowerLevel(0);
+        setIsPressing(false);
+        setPressStart(null);
+        setPressDuration(0);
         // Clear URL params
         const base = window.location.origin + window.location.pathname;
         window.history.replaceState({}, '', base);
@@ -178,23 +264,38 @@ export default function SkillSorter() {
         if (summaryOverride) return summaryOverride;
         if (stage !== 'summary') return null;
         const likeGood = [], likeBad = [], hateGood = [], hateBad = [];
+        const intensityData = {};
+
         deck.forEach((s) => {
             const like = likeMap[s.name];
             const good = goodMap[s.name];
+            const likeInt = likeIntensity[s.name] || 0;
+            const goodInt = goodIntensity[s.name] || 0;
+
+            // Store intensity data for this skill
+            intensityData[s.name] = {
+                enjoy: likeInt,
+                good: goodInt,
+                total: likeInt + goodInt
+            };
+
             if (like && good) likeGood.push(s);
             else if (like && !good) likeBad.push(s);
             else if (!like && good) hateGood.push(s);
             else hateBad.push(s);
         });
+
         return {
             superpowers: likeGood.map(s => s.name),
             growth: likeBad.map(s => s.name),
             burnout: hateGood.map(s => s.name),
             avoid: hateBad.map(s => s.name),
             // For display, also keep full objects
-            likeGood, likeBad, hateGood, hateBad
+            likeGood, likeBad, hateGood, hateBad,
+            // Include intensity data for sorting and sharing
+            intensity: intensityData
         };
-    }, [stage, deck, likeMap, goodMap, summaryOverride]);
+    }, [stage, deck, likeMap, goodMap, likeIntensity, goodIntensity, summaryOverride]);
 
     /* ------------------------ Error screen ----------------------- */
     if (stage === 'error') {
@@ -219,7 +320,7 @@ export default function SkillSorter() {
                 <h1 className="text-2xl font-semibold text-center text-black">
                     {stage === 'round1' ? 'Round 1: Do you ENJOY this skill?' : 'Round 2: Are you GOOD at this skill?'}
                 </h1>
-                <p className="text-xs text-gray-500">Press ← for NO &nbsp;|&nbsp; → for YES</p>
+                <p className="text-xs text-gray-500">Hold ← for NO &nbsp;|&nbsp; Hold → for YES (longer = faster!)</p>
                 <div className="flex gap-4 mt-1">
                     <ProgressBar label="Enjoy" percent={likePct} active={stage === 'round1'} color="bg-blue-500" emoji="😊" />
                     <ProgressBar label="Good" percent={goodPct} active={stage === 'round2'} color="bg-green-500" emoji="👍" />
@@ -265,15 +366,34 @@ export default function SkillSorter() {
             {card && (
                 <motion.div
                     key={`${card.name}-${stage}-${index}`}
-                    initial={{ y: -250, x: '-50%', opacity: 0.4, rotate: 0 }}
+                    initial={{ y: -250, x: '-50%', opacity: 0.4, rotate: 0, scale: 1 }}
                     animate={
                         decision === 'yes'
-                            ? { x: 500, rotate: 20, opacity: 0 }
+                            ? {
+                                x: 500,
+                                rotate: 20 + (powerLevel * 0.3),
+                                opacity: 0,
+                                scale: 1 + (powerLevel * 0.002)
+                            }
                             : decision === 'no'
-                                ? { x: -500, rotate: -20, opacity: 0 }
-                                : { y: 500, x: `calc(${offsetX}px - 50%)`, opacity: 1, rotate: 0 }
+                                ? {
+                                    x: -500,
+                                    rotate: -20 - (powerLevel * 0.3),
+                                    opacity: 0,
+                                    scale: 1 + (powerLevel * 0.002)
+                                }
+                                : {
+                                    y: 500,
+                                    x: `calc(${offsetX}px - 50%)`,
+                                    opacity: 1,
+                                    rotate: 0,
+                                    scale: 1 + (isPressing ? powerLevel * 0.001 : 0)
+                                }
                     }
-                    transition={{ duration: decision ? 0.4 : 4, ease: 'easeOut' }}
+                    transition={{
+                        duration: decision ? (0.8 - (powerLevel * 0.006)) : 4,
+                        ease: decision ? (powerLevel > 50 ? "easeIn" : "easeOut") : "easeOut"
+                    }}
                     className="absolute top-0 left-1/2"
                     onClick={() => !decision && handleVote(true)}
                 >
@@ -287,6 +407,9 @@ export default function SkillSorter() {
                                 ? 'shadow-[0_0_24px_4px_rgba(59,130,246,0.15)] shadow-blue-400/40' // blue glow for Enjoy
                                 : 'shadow-[0_0_24px_4px_rgba(34,197,94,0.18)] shadow-green-400/40' // green glow for Good
                             }`}
+                        style={{
+                            boxShadow: isPressing ? `0 0 ${24 + powerLevel * 0.5}px ${4 + powerLevel * 0.1}px rgba(59,130,246,${0.15 + powerLevel * 0.002})` : undefined
+                        }}
                     >
                         <CardContent className="p-6 flex flex-col gap-2">
                             <h2 className="text-lg font-bold text-center">{card.emoji} {card.name}</h2>
@@ -294,6 +417,9 @@ export default function SkillSorter() {
                     </Card>
                 </motion.div>
             )}
+
+            {/* Power Bar */}
+            <PowerBar powerLevel={powerLevel} isVisible={isPressing} />
 
             {/* Static card description at bottom center */}
             {card && (

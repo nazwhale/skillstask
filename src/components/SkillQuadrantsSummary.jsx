@@ -21,13 +21,20 @@ const useWindowSize = () => {
     return size;
 };
 
-const Quadrant = ({ title, subtitle, items, color }) => {
+const Quadrant = ({ title, subtitle, items, color, intensity = {} }) => {
     const ring = {
         green: 'ring-green-400',
         blue: 'ring-blue-400',
         amber: 'ring-amber-400',
         red: 'ring-red-400'
     }[color] || 'ring-gray-300';
+
+    // Sort items by intensity (highest first)
+    const sortedItems = [...items].sort((a, b) => {
+        const aIntensity = intensity[a.name]?.total || 0;
+        const bIntensity = intensity[b.name]?.total || 0;
+        return bIntensity - aIntensity;
+    });
 
     return (
         <motion.div
@@ -36,11 +43,27 @@ const Quadrant = ({ title, subtitle, items, color }) => {
         >
             <h2 className="text-lg font-bold text-center mb-1">{title}</h2>
             <p className="text-xs text-center text-gray-500 mb-2">{subtitle}</p>
-            {items.length ? (
+            {sortedItems.length ? (
                 <ul className="text-sm space-y-1 max-h-48 overflow-y-auto">
-                    {items.map(({ name, emoji }) => (
-                        <li key={name}>{emoji} {name}</li>
-                    ))}
+                    {sortedItems.map(({ name, emoji }) => {
+                        const skillIntensity = intensity[name];
+                        const totalIntensity = skillIntensity?.total || 0;
+                        const intensityColor = totalIntensity > 80 ? 'text-red-600' :
+                            totalIntensity > 60 ? 'text-orange-600' :
+                                totalIntensity > 40 ? 'text-yellow-600' :
+                                    totalIntensity > 20 ? 'text-blue-600' : 'text-gray-500';
+
+                        return (
+                            <li key={name} className="flex items-center justify-between">
+                                <span>{emoji} {name}</span>
+                                {totalIntensity > 0 && (
+                                    <span className={`text-xs font-bold ${intensityColor}`}>
+                                        {Math.round(totalIntensity)}%
+                                    </span>
+                                )}
+                            </li>
+                        );
+                    })}
                 </ul>
             ) : (
                 <p className="text-xs italic text-center text-gray-400">(none chosen)</p>
@@ -56,12 +79,13 @@ export default function SkillQuadrantsSummary({ summary, onRestart }) {
     // Shareable link logic
     const getShareUrl = () => {
         if (!summary) return window.location.href;
-        // Only use names for compactness
+        // Include both skill names and intensity data
         const data = JSON.stringify({
             superpowers: summary.superpowers,
             growth: summary.growth,
             burnout: summary.burnout,
-            avoid: summary.avoid
+            avoid: summary.avoid,
+            intensity: summary.intensity || {}
         });
         const encoded = encodeBase64(data);
         const base = window.location.origin + window.location.pathname;
@@ -100,10 +124,10 @@ export default function SkillQuadrantsSummary({ summary, onRestart }) {
                 animate="visible"
                 variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
             >
-                <Quadrant title="Superpowers" subtitle="Love & Good" items={summary.likeGood || []} color="green" />
-                <Quadrant title="Growth Zone" subtitle="Love & Bad" items={summary.likeBad || []} color="blue" />
-                <Quadrant title="Burnout Risk" subtitle="Hate & Good" items={summary.hateGood || []} color="amber" />
-                <Quadrant title="Delegate / Avoid" subtitle="Hate & Bad" items={summary.hateBad || []} color="red" />
+                <Quadrant title="Superpowers" subtitle="Love & Good" items={summary.likeGood || []} color="green" intensity={summary.intensity || {}} />
+                <Quadrant title="Growth Zone" subtitle="Love & Bad" items={summary.likeBad || []} color="blue" intensity={summary.intensity || {}} />
+                <Quadrant title="Burnout Risk" subtitle="Hate & Good" items={summary.hateGood || []} color="amber" intensity={summary.intensity || {}} />
+                <Quadrant title="Delegate / Avoid" subtitle="Hate & Bad" items={summary.hateBad || []} color="red" intensity={summary.intensity || {}} />
             </motion.div>
             <div className="flex flex-row items-center gap-3 mt-2">
                 <Button onClick={handleCopyLink}>
