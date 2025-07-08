@@ -34,6 +34,11 @@
 
 ## UI Improvements
 - **Fixed round title text color**: Changed "Round 1: Do you ENJOY this skill?" and "Round 2: Are you GOOD at this skill?" text from white to black by adding `text-black` class to the h1 element in `src/App.jsx`
+- Updated the summary screen button layout:
+  - Made 'Copy Shareable Link' and 'Do it again' buttons appear side by side (horizontal row)
+  - Set 'Copy Shareable Link' as the primary button
+  - Set 'Do it again' as the secondary (outline) button
+  - Affected file: src/App.jsx
 
 ## CSS Fixes
 - **Removed default text color from :root**: Deleted the `color` property from the `:root` selector in `src/index.css` to allow Tailwind's text color utilities to work as expected throughout the app.
@@ -64,3 +69,29 @@
 - Added custom SVG favicon (`public/favicon.svg`) with modern blue gradient design
 - Updated `index.html` to reference `/favicon.svg` instead of non-existent `/vite.svg`
 - Favicon features layered geometric shapes representing skill organization concept
+
+## Skill List Refactoring
+- **Created `src/data/skills.js`**: Moved the skills array from `src/App.jsx` to its own dedicated data file
+- **Updated imports**: Added import statement for skills in `src/App.jsx`
+- **Renamed variable**: Changed `tasks` to `skills` throughout the codebase for better clarity
+- **Improved code organization**: Separated data concerns from component logic for better maintainability
+
+- Implemented shareable results using Base64-encoded JSON in a query parameter in `src/App.jsx`.
+- Added a 'Copy Shareable Link' button to the summary screen, which encodes the user's results and copies a shareable URL to the clipboard.
+- On app load, the app checks for a `data` query parameter, decodes and parses it, and if valid, displays the summary screen with those results (bypassing the quiz).
+- Added error handling to show a friendly message if the link is invalid or corrupted.
+- No backend required; all logic is client-side for easy sharing and privacy.
+
+- Enhanced Button component in src/components/ui/button.jsx:
+  - Added 'variant' prop to support 'outline' (secondary) style
+  - Outline style: blue border, blue text, white background, blue border/text on hover
+  - Default remains primary (blue background, white text)
+  - Enables proper primary/secondary button distinction on summary screen
+- Fixed bug where no skills appeared when loading a shareable link
+    - Updated src/App.jsx to hydrate skill names from the link into full skill objects for quadrant display
+    - Ensures Quadrant UI renders correctly for shared results
+- Updated `src/App.jsx`:
+  - Modified the `restart` function to clear URL params by resetting the URL to its base path when 'Do it again' is clicked after visiting a shared link.
+  - This ensures that the app starts fresh and does not reload shared data from the URL.
+  - Modified the `restart` function to also reset `summaryOverride` to null.
+  - This ensures that after starting over from a shared link, the app does not use old summary data and a new run is truly fresh.

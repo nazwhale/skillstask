@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import Confetti from 'react-confetti';
 import { Card, CardContent } from './components/ui/card';
 import { Button } from './components/ui/button';
+import { skills } from './data/skills';
 
 /*****************************************************************
  * Skill Sorter App – Severance-inspired mini-game
@@ -11,17 +12,6 @@ import { Button } from './components/ui/button';
  * ✓ Progress bars & swipe feedback
  * ✓ Confetti + colour-ring quadrants at the end
  *****************************************************************/
-
-/* -------------------------- Skill list -------------------------- */
-const tasks = [
-    { name: 'Connector', description: 'Be the bridge between people or groups.' },
-    { name: 'Quick Switcher', description: 'Adapt fast when things change.' },
-    { name: 'Deep Diver', description: 'Break down complex problems logically.' },
-    { name: 'Budget Boss', description: 'Stretch money or resources wisely.' },
-    { name: 'Info Sorter', description: 'Group or organize people, things, or data.' },
-    { name: 'Data Wrangler', description: 'Crunch and interpret numbers.' },
-    { name: 'Detail Defender', description: 'Spot errors and keep things precise.' }
-];
 
 /* ---------------------------- Helpers --------------------------- */
 const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
@@ -36,6 +26,20 @@ const useWindowSize = () => {
     }, []);
     return size;
 };
+
+// Helper: Base64 encode/decode (URL-safe)
+function encodeBase64(str) {
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, function (match, p1) {
+        return String.fromCharCode('0x' + p1);
+    })).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function decodeBase64(str) {
+    str = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (str.length % 4) str += '=';
+    return decodeURIComponent(Array.prototype.map.call(atob(str), function (c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+}
 
 /* ----------------------- Tiny components ------------------------ */
 const ProgressBar = ({ label, percent, active }) => (
@@ -84,7 +88,7 @@ export default function SkillSorter() {
     const [index, setIndex] = useState(0);
     const [likeMap, setLike] = useState({});
     const [goodMap, setGood] = useState({});
-    const [deck, setDeck] = useState(() => shuffle(tasks));
+    const [deck, setDeck] = useState(() => shuffle(skills));
     const [decision, setDecision] = useState(null); // null | 'yes' | 'no'
 
     // Always call useWindowSize at the top level to avoid hook order issues
@@ -95,6 +99,42 @@ export default function SkillSorter() {
     const offsetX = offsets[index] || 0;
     const card = deck[index];
     const total = deck.length;
+
+    // For reading query params
+    const location = window.location;
+    const navigate = (url) => { window.history.pushState({}, '', url); };
+
+    // On mount: check for ?data= param
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const dataParam = params.get('data');
+        if (dataParam) {
+            try {
+                const decoded = decodeBase64(dataParam);
+                const parsed = JSON.parse(decoded);
+                // Validate structure
+                if (
+                    parsed &&
+                    ['superpowers', 'growth', 'burnout', 'avoid'].every(k => Array.isArray(parsed[k]))
+                ) {
+                    // Hydrate skill names to full objects for quadrant display
+                    const hydrate = (names) => skills.filter(s => names.includes(s.name));
+                    setStage('summary');
+                    setSummaryOverride({
+                        ...parsed,
+                        likeGood: hydrate(parsed.superpowers),
+                        likeBad: hydrate(parsed.growth),
+                        hateGood: hydrate(parsed.burnout),
+                        hateBad: hydrate(parsed.avoid)
+                    });
+                }
+            } catch (e) {
+                setStage('error');
+            }
+        }
+    }, []);
+    // For summary override (from shared link)
+    const [summaryOverride, setSummaryOverride] = useState(null);
 
     /* ----------------------- Keyboard input ----------------------- */
     useEffect(() => {
@@ -136,24 +176,27 @@ export default function SkillSorter() {
 
     /* ------------------------ Restart game ----------------------- */
     const restart = () => {
-        setDeck(shuffle(tasks));
+        setDeck(shuffle(skills));
         setLike({});
         setGood({});
         setStage('round1');
         setIndex(0);
         setDecision(null);
+        setSummaryOverride(null); // Reset summary override so new run is fresh
+        // Clear URL params
+        const base = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, '', base);
     };
 
     /* ------------------ Progress & summary data ------------------ */
     const likePct = (Object.keys(likeMap).length / total) * 100;
     const goodPct = (Object.keys(goodMap).length / total) * 100;
 
+    // Build summary object for sharing
     const summary = useMemo(() => {
+        if (summaryOverride) return summaryOverride;
         if (stage !== 'summary') return null;
-        const likeGood = [],
-            likeBad = [],
-            hateGood = [],
-            hateBad = [];
+        const likeGood = [], likeBad = [], hateGood = [], hateBad = [];
         deck.forEach((s) => {
             const like = likeMap[s.name];
             const good = goodMap[s.name];
@@ -162,10 +205,53 @@ export default function SkillSorter() {
             else if (!like && good) hateGood.push(s);
             else hateBad.push(s);
         });
-        return { likeGood, likeBad, hateGood, hateBad };
-    }, [stage, deck, likeMap, goodMap]);
+        return {
+            superpowers: likeGood.map(s => s.name),
+            growth: likeBad.map(s => s.name),
+            burnout: hateGood.map(s => s.name),
+            avoid: hateBad.map(s => s.name),
+            // For display, also keep full objects
+            likeGood, likeBad, hateGood, hateBad
+        };
+    }, [stage, deck, likeMap, goodMap, summaryOverride]);
+
+    // Shareable link logic
+    const getShareUrl = () => {
+        if (!summary) return window.location.href;
+        // Only use names for compactness
+        const data = JSON.stringify({
+            superpowers: summary.superpowers,
+            growth: summary.growth,
+            burnout: summary.burnout,
+            avoid: summary.avoid
+        });
+        const encoded = encodeBase64(data);
+        const base = window.location.origin + window.location.pathname;
+        return `${base}?data=${encoded}`;
+    };
+    const handleCopyLink = async () => {
+        const url = getShareUrl();
+        try {
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1200);
+        } catch {
+            alert('Failed to copy link');
+        }
+    };
+    const [copied, setCopied] = useState(false);
 
     /* ------------------------ Summary screen --------------------- */
+    if (stage === 'error') {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+                <h1 className="text-2xl font-bold mb-2">Invalid or Corrupted Link</h1>
+                <p className="text-gray-500 mb-4">Sorry, we couldn't load these results. Please check your link or try again.</p>
+                <Button onClick={restart}>Start Over</Button>
+            </div>
+        );
+    }
+
     if (stage === 'summary' && summary) {
         // Only use windowSize values if needed
         const { width, height } = windowSize;
@@ -188,14 +274,19 @@ export default function SkillSorter() {
                     animate="visible"
                     variants={{ visible: { transition: { staggerChildren: 0.12 } } }}
                 >
-                    <Quadrant title="Superpowers" subtitle="Love & Good" items={summary.likeGood} color="green" />
-                    <Quadrant title="Growth Zone" subtitle="Love & Bad" items={summary.likeBad} color="blue" />
-                    <Quadrant title="Burnout Risk" subtitle="Hate & Good" items={summary.hateGood} color="amber" />
-                    <Quadrant title="Delegate / Avoid" subtitle="Hate & Bad" items={summary.hateBad} color="red" />
+                    <Quadrant title="Superpowers" subtitle="Love & Good" items={summary.likeGood || []} color="green" />
+                    <Quadrant title="Growth Zone" subtitle="Love & Bad" items={summary.likeBad || []} color="blue" />
+                    <Quadrant title="Burnout Risk" subtitle="Hate & Good" items={summary.hateGood || []} color="amber" />
+                    <Quadrant title="Delegate / Avoid" subtitle="Hate & Bad" items={summary.hateBad || []} color="red" />
                 </motion.div>
-                <Button onClick={restart} className="mt-4">
-                    ↻ Do it again
-                </Button>
+                <div className="flex flex-row items-center gap-3 mt-2">
+                    <Button onClick={handleCopyLink}>
+                        {copied ? '✓ Link copied!' : '🔗 Copy Shareable Link'}
+                    </Button>
+                    <Button onClick={restart} variant="outline">
+                        ↻ Do it again
+                    </Button>
+                </div>
             </div>
         );
     }
