@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import Confetti from 'react-confetti';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { Card, CardContent } from './components/ui/card';
+import { Button } from './components/ui/button';
 
 /*****************************************************************
  * Skill Sorter App – Severance-inspired mini-game
@@ -87,6 +87,10 @@ export default function SkillSorter() {
     const [deck, setDeck] = useState(() => shuffle(tasks));
     const [decision, setDecision] = useState(null); // null | 'yes' | 'no'
 
+    // Always call useWindowSize at the top level to avoid hook order issues
+    // Only use its values when needed
+    const windowSize = useWindowSize();
+
     const offsets = useMemo(() => deck.map(() => Math.random() * 200 - 100), [deck]);
     const offsetX = offsets[index] || 0;
     const card = deck[index];
@@ -163,7 +167,8 @@ export default function SkillSorter() {
 
     /* ------------------------ Summary screen --------------------- */
     if (stage === 'summary' && summary) {
-        const { width, height } = useWindowSize();
+        // Only use windowSize values if needed
+        const { width, height } = windowSize;
         return (
             <div className="min-h-screen relative flex flex-col items-center gap-8 p-6 bg-slate-50 overflow-hidden">
                 {width > 0 && (
@@ -199,7 +204,7 @@ export default function SkillSorter() {
     return (
         <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-100 to-slate-200">
             <div className="absolute inset-x-0 top-4 flex flex-col items-center gap-2 pointer-events-none">
-                <h1 className="text-2xl font-semibold text-center">
+                <h1 className="text-2xl font-semibold text-center text-black">
                     {stage === 'round1' ? 'Round 1: Do you ENJOY this skill?' : 'Round 2: Are you GOOD at this skill?'}
                 </h1>
                 <p className="text-xs text-gray-500">Press ← for NO &nbsp;|&nbsp; → for YES</p>
@@ -226,10 +231,10 @@ export default function SkillSorter() {
                 >
                     <Card
                         className={`w-72 rounded-2xl shadow-xl backdrop-blur ${decision === 'yes'
-                                ? 'ring-4 ring-green-400'
-                                : decision === 'no'
-                                    ? 'ring-4 ring-red-400'
-                                    : 'ring-0'
+                            ? 'ring-4 ring-green-400'
+                            : decision === 'no'
+                                ? 'ring-4 ring-red-400'
+                                : 'ring-0'
                             }`}
                     >
                         <CardContent className="p-6 flex flex-col gap-2">
@@ -241,4 +246,4 @@ export default function SkillSorter() {
             )}
         </div>
     );
-}
+} 

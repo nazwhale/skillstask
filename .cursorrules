@@ -1,0 +1,20 @@
+# Cursor Rules for Skill Sorter Project
+
+## Work Log Rule
+- **ALWAYS** write to `WORK_LOG.md` after making any changes to the codebase
+- Describe what was changed, added, or modified
+- Include a brief description of the change
+- Use bullet points for multiple changes
+- Be specific about what files were affected and why
+- **Add newest entries at the bottom** of the work log (no dates needed)
+
+## Code Style
+- Use consistent formatting and indentation
+- Follow React best practices
+- Use meaningful variable and function names
+- Add comments for complex logic
+
+## Project Structure
+- Keep UI components in `src/components/ui/`
+- Use the `@/` alias for imports from the `src/` directory
+- Maintain the existing file organization 
