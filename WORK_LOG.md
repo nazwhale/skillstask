@@ -58,3 +58,9 @@
 - Switched to using only Framer Motion for horizontal centering and offset of the card in `src/App.jsx`
 - Removed `-translate-x-1/2` from the className and used `x: '-50%'` in initial and `x: calc(${offsetX}px - 50%)` in animate for the falling state
 - This avoids transform order conflicts and ensures the card falls from the true center
+
+## Favicon Setup
+- Created `public/` directory for static assets
+- Added custom SVG favicon (`public/favicon.svg`) with modern blue gradient design
+- Updated `index.html` to reference `/favicon.svg` instead of non-existent `/vite.svg`
+- Favicon features layered geometric shapes representing skill organization concept
