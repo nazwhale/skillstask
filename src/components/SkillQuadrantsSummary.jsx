@@ -48,17 +48,18 @@ const Quadrant = ({ title, subtitle, items, color, intensity = {} }) => {
                     {sortedItems.map(({ name, emoji }) => {
                         const skillIntensity = intensity[name];
                         const totalIntensity = skillIntensity?.total || 0;
-                        const intensityColor = totalIntensity > 80 ? 'text-red-600' :
-                            totalIntensity > 60 ? 'text-orange-600' :
-                                totalIntensity > 40 ? 'text-yellow-600' :
-                                    totalIntensity > 20 ? 'text-blue-600' : 'text-gray-500';
+                        const normalizedIntensity = Math.round(totalIntensity / 2); // Normalize to 100%
+                        const intensityColor = normalizedIntensity > 80 ? 'text-red-600' :
+                            normalizedIntensity > 60 ? 'text-orange-600' :
+                                normalizedIntensity > 40 ? 'text-yellow-600' :
+                                    normalizedIntensity > 20 ? 'text-blue-600' : 'text-gray-500';
 
                         return (
                             <li key={name} className="flex items-center justify-between">
                                 <span>{emoji} {name}</span>
-                                {totalIntensity > 0 && (
+                                {normalizedIntensity > 0 && (
                                     <span className={`text-xs font-bold ${intensityColor}`}>
-                                        {Math.round(totalIntensity)}%
+                                        {normalizedIntensity}%
                                     </span>
                                 )}
                             </li>

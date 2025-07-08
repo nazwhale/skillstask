@@ -204,3 +204,5 @@
   - Most impactful skills appear at the top of each quadrant
   - Visual intensity indicators help identify key strengths and weaknesses
   - Shared links preserve the emotional intensity of decisions
+- Normalized the skill intensity percentages in the summary screen to show values out of 100% (average of enjoy and good intensities), instead of allowing values over 100%.
+- Updated `src/components/SkillQuadrantsSummary.jsx` to use the normalized value for both display and color coding in the Quadrant component.
