@@ -278,3 +278,14 @@
 - Updated Open Graph description in `index.html`:
   - Changed og:description and twitter:description from "Organize and sort your skills efficiently" to "Identify your burnout skills, superpowers, and growth zones"
   - New description better reflects the app's core value proposition and what users will discover
+
+- Added tooltip functionality to show skill descriptions on hover in the summary screen:
+  - Created new shadcn tooltip component (`src/components/ui/tooltip.jsx`) using Radix UI primitives
+  - Installed `@radix-ui/react-tooltip` dependency
+  - Updated `src/components/SkillQuadrantsSummary.jsx` to import skills data and tooltip components
+  - Wrapped skill names with tooltips that show the skill description on hover
+  - Added cursor-help styling to indicate hoverable elements
+  - Tooltips work for both full and short skill versions
+- Fixed tooltip delay to appear instantly on hover:
+  - Added `delayDuration={0}` prop to Tooltip component in `src/components/SkillQuadrantsSummary.jsx`
+  - Tooltips now appear immediately when hovering over skill names instead of after a 500ms delay

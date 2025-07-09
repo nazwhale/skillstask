@@ -2,6 +2,9 @@ import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import Confetti from 'react-confetti';
 import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { skills } from '@/data/skills';
+import { shortSkills } from '@/data/shortSkills';
 
 // Helper: Base64 encode/decode (URL-safe)
 function encodeBase64(str) {
@@ -36,6 +39,13 @@ const Quadrant = ({ title, subtitle, items, color, intensity = {} }) => {
         return bIntensity - aIntensity;
     });
 
+    // Create a map of all skills for easy lookup
+    const allSkills = [...skills, ...shortSkills];
+    const skillMap = allSkills.reduce((acc, skill) => {
+        acc[skill.name] = skill;
+        return acc;
+    }, {});
+
     return (
         <motion.div
             variants={{ hidden: { opacity: 0, y: 15 }, visible: { opacity: 1, y: 0 } }}
@@ -54,9 +64,20 @@ const Quadrant = ({ title, subtitle, items, color, intensity = {} }) => {
                                 normalizedIntensity > 40 ? 'text-yellow-600' :
                                     normalizedIntensity > 20 ? 'text-blue-600' : 'text-gray-500';
 
+                        const skillDescription = skillMap[name]?.description || '';
+
                         return (
                             <li key={name} className="flex items-center justify-between">
-                                <span>{emoji} {name}</span>
+                                <TooltipProvider>
+                                    <Tooltip delayDuration={0}>
+                                        <TooltipTrigger asChild>
+                                            <span className="cursor-help">{emoji} {name}</span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>{skillDescription}</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
                                 {normalizedIntensity > 0 && (
                                     <span className={`text-xs font-bold ${intensityColor}`}>
                                         {normalizedIntensity}%
