@@ -244,3 +244,33 @@
 - Affected file: src/App.jsx
 
 - Added `jsconfig.json` to set up the `
+
+## 10-Card Short Version Implementation
+- **Created `src/data/shortSkills.js`**: New file containing 10 carefully selected skills with the most signal
+  - Selected core professional skills: Connector, Deep Diver, Tech Confident, Big Picture Thinker, People First, Maker, Idea Machine, Decision Maker, Teacher, Clear Writer
+  - These skills cover different aspects (technical, soft skills, leadership, communication) and represent fundamental workplace competencies
+- **Updated `src/components/StartPage.jsx`**: Added version toggle functionality
+  - Added state to track selected version (short vs full)
+  - Created toggle buttons for "Full Version (44 skills)" and "Quick Version (10 skills)"
+  - Added descriptive text explaining the difference between versions
+  - Updated onStart prop to pass version selection to parent component
+- **Updated `src/App.jsx`**: Modified main app to support both versions
+  - Added import for shortSkills
+  - Added selectedVersion state to track user's choice
+  - Created handleStart function to initialize deck based on selected version
+  - Updated restart function to maintain selected version when restarting
+  - Updated start page call to use new handleStart function
+- **Improved user experience**: Users can now choose between a quick 10-card assessment or the full 44-card comprehensive evaluation
+
+- Updated the "Start Sorting" button gradient in `src/components/StartPage.jsx` to use a softer, more modern color blend:
+  - Changed from a strong blue-to-green (`from-blue-500 to-green-500`) to a harmonious gradient (`from-sky-400 via-teal-400 to-emerald-400`)
+  - Adjusted hover state to deepen the colors slightly for a subtle effect
+  - This makes the button less garish and more visually appealing on the landing page
+
+## Open Graph Image Implementation
+- **Moved `ogimage.png` to `public/` directory**: Placed the Open Graph image in the standard location for static assets
+- **Added Open Graph meta tags** to `index.html`:
+  - Added og:title, og:description, og:image, og:type, and og:url tags
+  - Added Twitter Card meta tags for better social media sharing
+  - Set og:image to reference `/ogimage.png` for proper social media previews
+- **Enhanced social sharing**: The app now displays a proper preview image when shared on social media platforms

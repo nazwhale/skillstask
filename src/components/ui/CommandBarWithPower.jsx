@@ -31,10 +31,16 @@ export default function CommandBarWithPower({
     stage = 'round1',
 }) {
     // Bar fill color and direction
-    const fillColor =
-        stage === 'round1'
-            ? 'bg-gradient-to-r from-blue-400 via-blue-500 to-blue-600'
-            : 'bg-gradient-to-r from-green-400 via-green-500 to-green-600';
+    let fillColor;
+    if (stage === 'round1') {
+        fillColor = direction === 'left'
+            ? 'bg-gradient-to-l from-blue-200 via-blue-300 to-blue-400'
+            : 'bg-gradient-to-r from-blue-200 via-blue-300 to-blue-400';
+    } else {
+        fillColor = direction === 'left'
+            ? 'bg-gradient-to-l from-green-200 via-green-300 to-green-400'
+            : 'bg-gradient-to-r from-green-200 via-green-300 to-green-400';
+    }
 
     // Power bar fill style
     const fillStyle = direction === 'left'

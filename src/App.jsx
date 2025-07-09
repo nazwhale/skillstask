@@ -5,6 +5,7 @@ import { Button } from './components/ui/button';
 import SkillQuadrantsSummary from './components/SkillQuadrantsSummary';
 import StartPage from './components/StartPage';
 import { skills } from './data/skills';
+import { shortSkills } from './data/shortSkills';
 import { Command, CommandList, CommandItem } from './components/ui/command';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import CommandBarWithPower from './components/ui/CommandBarWithPower';
@@ -68,6 +69,7 @@ export default function SkillSorter() {
     const [goodMap, setGood] = useState({});
     const [likeIntensity, setLikeIntensity] = useState({}); // Store intensity for Enjoy decisions
     const [goodIntensity, setGoodIntensity] = useState({}); // Store intensity for Good decisions
+    const [selectedVersion, setSelectedVersion] = useState('full'); // 'full' or 'short'
     const [deck, setDeck] = useState(() => shuffle(skills));
     const [decision, setDecision] = useState(null); // null | 'yes' | 'no'
 
@@ -146,6 +148,14 @@ export default function SkillSorter() {
     }, []);
     // For summary override (from shared link)
     const [summaryOverride, setSummaryOverride] = useState(null);
+
+    // Handle start page version selection
+    const handleStart = (version) => {
+        setSelectedVersion(version);
+        const selectedSkills = version === 'short' ? shortSkills : skills;
+        setDeck(shuffle(selectedSkills));
+        setStage('round1');
+    };
 
     /* ----------------------- Keyboard input ----------------------- */
     useEffect(() => {
@@ -243,7 +253,8 @@ export default function SkillSorter() {
 
     /* ------------------------ Restart game ----------------------- */
     const restart = () => {
-        setDeck(shuffle(skills));
+        const selectedSkills = selectedVersion === 'short' ? shortSkills : skills;
+        setDeck(shuffle(selectedSkills));
         setLike({});
         setGood({});
         setLikeIntensity({});
@@ -317,7 +328,7 @@ export default function SkillSorter() {
 
     /* ------------------------ Start page ------------------------ */
     if (stage === 'start') {
-        return <StartPage onStart={() => setStage('round1')} />;
+        return <StartPage onStart={handleStart} />;
     }
 
     /* ------------------------ Summary screen --------------------- */
