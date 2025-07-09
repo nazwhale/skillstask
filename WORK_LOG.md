@@ -274,3 +274,7 @@
   - Added Twitter Card meta tags for better social media sharing
   - Set og:image to reference `/ogimage.png` for proper social media previews
 - **Enhanced social sharing**: The app now displays a proper preview image when shared on social media platforms
+
+- Updated Open Graph description in `index.html`:
+  - Changed og:description and twitter:description from "Organize and sort your skills efficiently" to "Identify your burnout skills, superpowers, and growth zones"
+  - New description better reflects the app's core value proposition and what users will discover
