@@ -54,7 +54,7 @@ export default function CommandBarWithPower({
     const showFill = isPressing && direction;
 
     // Center text
-    const centerText = isPressing && direction ? getPowerCopy(powerLevel, direction) : 'Hold for power';
+    const centerText = isPressing && direction ? getPowerCopy(powerLevel, direction) : 'Hold arrow key for power';
     const centerTextColor = isPressing && direction ? 'text-gray-700 font-bold' : 'text-gray-400';
 
     return (
