@@ -4,6 +4,7 @@ import { Card, CardContent } from './components/ui/card';
 import { Button } from './components/ui/button';
 import { PowerBar } from './components/ui/PowerBar';
 import SkillQuadrantsSummary from './components/SkillQuadrantsSummary';
+import StartPage from './components/StartPage';
 import { skills } from './data/skills';
 
 /*****************************************************************
@@ -59,7 +60,7 @@ const ProgressBar = ({ label, percent, active, color, emoji }) => (
 
 /* -------------------------- Main app --------------------------- */
 export default function SkillSorter() {
-    const [stage, setStage] = useState('round1');
+    const [stage, setStage] = useState('start');
     const [index, setIndex] = useState(0);
     const [likeMap, setLike] = useState({});
     const [goodMap, setGood] = useState({});
@@ -242,7 +243,7 @@ export default function SkillSorter() {
         setGood({});
         setLikeIntensity({});
         setGoodIntensity({});
-        setStage('round1');
+        setStage('start');
         setIndex(0);
         setDecision(null);
         setSummaryOverride(null); // Reset summary override so new run is fresh
@@ -306,6 +307,11 @@ export default function SkillSorter() {
                 <Button onClick={restart}>Start Over</Button>
             </div>
         );
+    }
+
+    /* ------------------------ Start page ------------------------ */
+    if (stage === 'start') {
+        return <StartPage onStart={() => setStage('round1')} />;
     }
 
     /* ------------------------ Summary screen --------------------- */

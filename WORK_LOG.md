@@ -206,3 +206,25 @@
   - Shared links preserve the emotional intensity of decisions
 - Normalized the skill intensity percentages in the summary screen to show values out of 100% (average of enjoy and good intensities), instead of allowing values over 100%.
 - Updated `src/components/SkillQuadrantsSummary.jsx` to use the normalized value for both display and color coding in the Quadrant component.
+
+## Start Page Implementation
+- **Created `src/components/StartPage.jsx`**: New landing page component with beautiful design and animations
+  - Features app title, description, and explanation of the two-round process
+  - Shows what users will discover (Superpowers, Growth Zone, Burnout Risk, Delegate/Avoid)
+  - Includes animated sections with staggered reveals using Framer Motion
+  - Consistent styling with the rest of the app (slate colors, cards, gradients)
+- **Updated `src/App.jsx`**:
+  - Added import for StartPage component
+  - Changed initial stage from 'round1' to 'start'
+  - Updated restart function to go back to 'start' instead of 'round1'
+  - Added start page condition to render logic before error and summary screens
+- **Improved user experience**:
+  - App now starts with an informative landing page instead of jumping straight into sorting
+  - Users understand the process before beginning
+  - "Do it again" button now returns to the start page for a fresh experience
+  - Maintains all existing functionality while adding better onboarding
+
+- Swapped the colors for Burnout Risk and Delegate/Avoid on both the first and last pages:
+  - Burnout Risk is now red (most bad), Delegate/Avoid is now amber
+  - Updated the 'What You'll Discover' legend in `src/components/StartPage.jsx`
+  - Updated the quadrant color props in `src/components/SkillQuadrantsSummary.jsx`

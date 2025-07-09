@@ -127,8 +127,8 @@ export default function SkillQuadrantsSummary({ summary, onRestart }) {
             >
                 <Quadrant title="Superpowers" subtitle="Love & Good" items={summary.likeGood || []} color="green" intensity={summary.intensity || {}} />
                 <Quadrant title="Growth Zone" subtitle="Love & Bad" items={summary.likeBad || []} color="blue" intensity={summary.intensity || {}} />
-                <Quadrant title="Burnout Risk" subtitle="Hate & Good" items={summary.hateGood || []} color="amber" intensity={summary.intensity || {}} />
-                <Quadrant title="Delegate / Avoid" subtitle="Hate & Bad" items={summary.hateBad || []} color="red" intensity={summary.intensity || {}} />
+                <Quadrant title="Burnout Risk" subtitle="Hate & Good" items={summary.hateGood || []} color="red" intensity={summary.intensity || {}} />
+                <Quadrant title="Delegate / Avoid" subtitle="Hate & Bad" items={summary.hateBad || []} color="amber" intensity={summary.intensity || {}} />
             </motion.div>
             <div className="flex flex-row items-center gap-3 mt-2">
                 <Button onClick={handleCopyLink}>
