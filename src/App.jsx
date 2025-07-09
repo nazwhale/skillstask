@@ -6,6 +6,8 @@ import { PowerBar } from './components/ui/PowerBar';
 import SkillQuadrantsSummary from './components/SkillQuadrantsSummary';
 import StartPage from './components/StartPage';
 import { skills } from './data/skills';
+import { Command, CommandList, CommandItem } from './components/ui/command';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 /*****************************************************************
  * Skill Sorter App – Severance-inspired mini-game
@@ -324,12 +326,40 @@ export default function SkillSorter() {
         <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-100 to-slate-200">
             <div className="absolute inset-x-0 top-4 flex flex-col items-center gap-2 pointer-events-none">
                 <h1 className="text-2xl font-semibold text-center text-black">
-                    {stage === 'round1' ? 'Round 1: Do you ENJOY this skill?' : 'Round 2: Are you GOOD at this skill?'}
+                    {stage === 'round1' ? (
+                        <>Round 1: Do you <span className="text-blue-600 font-bold">ENJOY</span> this skill?</>
+                    ) : (
+                        <>Round 2: Are you <span className="text-green-600 font-bold">GOOD</span> at this skill?</>
+                    )}
                 </h1>
-                <p className="text-xs text-gray-500">Hold ← for NO &nbsp;|&nbsp; Hold → for YES (longer = faster!)</p>
+                {/* Command bar for left/right arrows */}
+                <div className="w-full flex justify-center mt-2">
+                    <Command className="rounded-lg border shadow bg-white/80 max-w-md w-full">
+                        <CommandList>
+                            <div className="flex items-center justify-between px-4 py-2 gap-4">
+                                <CommandItem className="flex items-center gap-2 text-gray-700">
+                                    <ArrowLeft className="w-5 h-5 text-blue-500" />
+                                    <span className="text-sm font-medium">NO</span>
+                                </CommandItem>
+                                <span className="text-xs text-gray-400">Hold for power</span>
+                                <CommandItem className="flex items-center gap-2 text-gray-700">
+                                    <span className="text-sm font-medium">YES</span>
+                                    <ArrowRight className="w-5 h-5 text-green-500" />
+                                </CommandItem>
+                            </div>
+                        </CommandList>
+                    </Command>
+                </div>
+                {/* End Command bar */}
                 <div className="flex gap-4 mt-1">
                     <ProgressBar label="Enjoy" percent={likePct} active={stage === 'round1'} color="bg-blue-500" emoji="😊" />
                     <ProgressBar label="Good" percent={goodPct} active={stage === 'round2'} color="bg-green-500" emoji="👍" />
+                </div>
+                {/* Cards left counter moved here for better alignment */}
+                <div className="mt-2">
+                    <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full shadow-sm ${stage === 'round2' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
+                        {total - index - 1} card{total - index - 1 === 1 ? '' : 's'} left
+                    </span>
                 </div>
             </div>
 
@@ -361,12 +391,7 @@ export default function SkillSorter() {
                         </Card>
                     </motion.div>
                 ))}
-                {/* Cards left counter */}
-                <div className="absolute left-1/2 bottom-0 -translate-x-1/2 mb-2">
-                    <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full shadow-sm ${stage === 'round2' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                        {total - index - 1} card{total - index - 1 === 1 ? '' : 's'} left
-                    </span>
-                </div>
+                {/* Cards left counter removed from here */}
             </div>
 
             {card && (
