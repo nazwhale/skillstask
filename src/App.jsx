@@ -2,12 +2,12 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from './components/ui/card';
 import { Button } from './components/ui/button';
-import { PowerBar } from './components/ui/PowerBar';
 import SkillQuadrantsSummary from './components/SkillQuadrantsSummary';
 import StartPage from './components/StartPage';
 import { skills } from './data/skills';
 import { Command, CommandList, CommandItem } from './components/ui/command';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
+import CommandBarWithPower from './components/ui/CommandBarWithPower';
 
 /*****************************************************************
  * Skill Sorter App – Severance-inspired mini-game
@@ -76,6 +76,7 @@ export default function SkillSorter() {
     const [pressDuration, setPressDuration] = useState(0);
     const [isPressing, setIsPressing] = useState(false);
     const [powerLevel, setPowerLevel] = useState(0);
+    const [pressDirection, setPressDirection] = useState(null); // Track which arrow is held
 
     // Mini stack size for upcoming cards
     const MINI_STACK_SIZE = 4;
@@ -155,6 +156,7 @@ export default function SkillSorter() {
                     setPressStart(Date.now());
                     setIsPressing(true);
                     setPowerLevel(0);
+                    setPressDirection(e.key === 'ArrowLeft' ? 'left' : 'right');
                 }
             }
         };
@@ -167,6 +169,7 @@ export default function SkillSorter() {
                     setPressDuration(duration);
                     setIsPressing(false);
                     setPressStart(null);
+                    setPressDirection(null);
 
                     // Calculate final power level (0-100)
                     const maxDuration = 1000; // 1 second for full power
@@ -253,6 +256,7 @@ export default function SkillSorter() {
         setIsPressing(false);
         setPressStart(null);
         setPressDuration(0);
+        setPressDirection(null); // Reset press direction on restart
         // Clear URL params
         const base = window.location.origin + window.location.pathname;
         window.history.replaceState({}, '', base);
@@ -333,23 +337,12 @@ export default function SkillSorter() {
                     )}
                 </h1>
                 {/* Command bar for left/right arrows */}
-                <div className="w-full flex justify-center mt-2">
-                    <Command className="rounded-lg border shadow bg-white/80 max-w-md w-full">
-                        <CommandList>
-                            <div className="flex items-center justify-between px-4 py-2 gap-4">
-                                <CommandItem className="flex items-center gap-2 text-gray-700">
-                                    <ArrowLeft className="w-5 h-5 text-blue-500" />
-                                    <span className="text-sm font-medium">NO</span>
-                                </CommandItem>
-                                <span className="text-xs text-gray-400">Hold for power</span>
-                                <CommandItem className="flex items-center gap-2 text-gray-700">
-                                    <span className="text-sm font-medium">YES</span>
-                                    <ArrowRight className="w-5 h-5 text-green-500" />
-                                </CommandItem>
-                            </div>
-                        </CommandList>
-                    </Command>
-                </div>
+                <CommandBarWithPower
+                    isPressing={isPressing}
+                    powerLevel={powerLevel}
+                    direction={isPressing ? pressDirection : null}
+                    stage={stage}
+                />
                 {/* End Command bar */}
                 <div className="flex gap-4 mt-1">
                     <ProgressBar label="Enjoy" percent={likePct} active={stage === 'round1'} color="bg-blue-500" emoji="😊" />
@@ -450,7 +443,7 @@ export default function SkillSorter() {
             )}
 
             {/* Power Bar */}
-            <PowerBar powerLevel={powerLevel} isVisible={isPressing} />
+            {/* <PowerBar powerLevel={powerLevel} isVisible={isPressing} /> */}
 
             {/* Static card description at bottom center */}
             {card && (
