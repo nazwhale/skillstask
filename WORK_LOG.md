@@ -289,3 +289,33 @@
 - Fixed tooltip delay to appear instantly on hover:
   - Added `delayDuration={0}` prop to Tooltip component in `src/components/SkillQuadrantsSummary.jsx`
   - Tooltips now appear immediately when hovering over skill names instead of after a 500ms delay
+
+- Fixed card jank when pressing arrow keys during the falling animation:
+  - Updated the transition prop for the main card's motion.div in `src/App.jsx` to add a scale-specific transition.
+  - This ensures the scale animation is quick and smooth, preventing the card from shifting position when the power bar is activated.
+
+- Refactored the sorting screen layout in `src/App.jsx`:
+  - The main card now appears just below the "cards left" indicator instead of falling far down the page
+  - The card description is now directly under the card, not fixed to the bottom of the viewport
+  - Removed absolute/fixed positioning and large y-offsets for the card and description
+  - Used a flex column layout for indicator, card, and description, with reduced vertical spacing for a tighter, less spaced-out look
+  - Affected file: `src/App.jsx`
+- Updated the skill description box under the main card to use a tinted accent background (blue for round 1, green for round 2) for better separation and visual clarity.
+- Added border, padding, and rounded corners for a card-like feel.
+- Updated in `src/App.jsx`.
+
+- Fixed mini stack alignment and placement:
+  - Moved the mini stack rendering block to appear directly beneath the description box, inside the main content column in `src/App.jsx`
+  - Removed absolute positioning, BASE_Y, and vertical offset logic from the mini stack
+  - Used flex and margin utilities for horizontal stacking and centering
+  - Each mini card now overlaps slightly for a stacked effect, always visually aligned with the main card and description
+  - This resolves the issue where the stack appeared off to the right and far down the page
+- Updated the mini card stack in `src/App.jsx`:
+  - All mini cards are now the same size (no scale difference)
+  - The rightmost card (next up) is the most opaque, and opacity decreases as you move left
+  - Removed scale logic and set opacity based on index for a clear visual gradient
+- Removed the blue highlight (ring and scale) from the rightmost mini card in the stack in `src/App.jsx`
+- Reversed the mini card stack so the next up card is now on the right, and opacity increases as you move right
+
+- Updated `CardContent` in `src/components/ui/card.jsx` to accept a `padding` prop (default 'p-6') for flexible padding.
+- In `src/App.jsx`, the main card uses `padding="p-6"` and the mini stack cards use `padding="p-1"` for a tighter look.

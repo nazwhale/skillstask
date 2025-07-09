@@ -338,8 +338,8 @@ export default function SkillSorter() {
 
     /* ------------------------ Sorting screen --------------------- */
     return (
-        <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-100 to-slate-200">
-            <div className="absolute inset-x-0 top-4 flex flex-col items-center gap-2 pointer-events-none">
+        <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-slate-100 to-slate-200 flex flex-col items-center pt-8">
+            <div className="flex flex-col items-center gap-2 w-full max-w-md">
                 <h1 className="text-2xl font-semibold text-center text-black">
                     {stage === 'round1' ? (
                         <>Round 1: Do you <span className="text-blue-600 font-bold">ENJOY</span> this skill?</>
@@ -359,111 +359,119 @@ export default function SkillSorter() {
                     <ProgressBar label="Enjoy" percent={likePct} active={stage === 'round1'} color="bg-blue-500" emoji="😊" />
                     <ProgressBar label="Good" percent={goodPct} active={stage === 'round2'} color="bg-green-500" emoji="👍" />
                 </div>
-                {/* Cards left counter moved here for better alignment */}
-                <div className="mt-2">
+                {/* Cards left counter */}
+                <div className="mt-2 mb-2">
                     <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full shadow-sm ${stage === 'round2' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
                         {total - index - 1} card{total - index - 1 === 1 ? '' : 's'} left
                     </span>
                 </div>
-            </div>
-
-            {/* Mini stack of upcoming cards */}
-            <div className="absolute top-0 left-1/2 w-72 h-44 -translate-x-1/2 pointer-events-none z-0">
-                {upcomingCards.map((c, i) => (
-                    <motion.div
-                        key={c.name}
-                        className="absolute left-1/2 top-0"
-                        initial={{
-                            scale: 0.92 - i * 0.08,
-                            y: BASE_Y + i * 12,
-                            opacity: 0.5 - i * 0.1,
-                        }}
-                        animate={{
-                            scale: 0.92 - i * 0.08,
-                            y: BASE_Y + i * 12,
-                            opacity: 0.5 - i * 0.1,
-                        }}
-                        transition={{ duration: 0.4, ease: 'easeOut' }}
-                        style={{
-                            transform: `translateX(-50%)`,
-                            zIndex: i,
-                            pointerEvents: 'none',
-                        }}
-                    >
-                        <Card className="w-64 rounded-xl shadow-md bg-white/80">
-                            <CardContent className="p-3 text-xs text-center">{c.emoji} {c.name}</CardContent>
-                        </Card>
-                    </motion.div>
-                ))}
-                {/* Cards left counter removed from here */}
-            </div>
-
-            {card && (
-                <motion.div
-                    key={`${card.name}-${stage}-${index}`}
-                    initial={{ y: -250, x: '-50%', opacity: 0.4, rotate: 0, scale: 1 }}
-                    animate={
-                        decision === 'yes'
-                            ? {
-                                x: 500,
-                                rotate: 20 + (powerLevel * 0.3),
-                                opacity: 0,
-                                scale: 1 + (powerLevel * 0.002)
+                {/* Main card and description */}
+                {card && (
+                    <>
+                        <motion.div
+                            key={`${card.name}-${stage}-${index}`}
+                            initial={{ y: 0, x: 0, opacity: 0.4, rotate: 0, scale: 1 }}
+                            animate={
+                                decision === 'yes'
+                                    ? {
+                                        x: 500,
+                                        rotate: 20 + (powerLevel * 0.3),
+                                        opacity: 0,
+                                        scale: 1 + (powerLevel * 0.002)
+                                    }
+                                    : decision === 'no'
+                                        ? {
+                                            x: -500,
+                                            rotate: -20 - (powerLevel * 0.3),
+                                            opacity: 0,
+                                            scale: 1 + (powerLevel * 0.002)
+                                        }
+                                        : {
+                                            y: 0,
+                                            x: 0,
+                                            opacity: 1,
+                                            rotate: 0,
+                                            scale: 1 + (isPressing ? powerLevel * 0.001 : 0)
+                                        }
                             }
-                            : decision === 'no'
-                                ? {
-                                    x: -500,
-                                    rotate: -20 - (powerLevel * 0.3),
-                                    opacity: 0,
-                                    scale: 1 + (powerLevel * 0.002)
+                            transition={{
+                                duration: decision ? (1.5 - (powerLevel * 0.013)) : 0.4,
+                                ease: decision ? (powerLevel > 50 ? "easeIn" : "easeOut") : "easeOut",
+                                scale: isPressing ? {
+                                    type: "spring",
+                                    stiffness: 700,
+                                    damping: 30
+                                } : {
+                                    type: "spring",
+                                    stiffness: 700,
+                                    damping: 30
                                 }
-                                : {
-                                    y: 500,
-                                    x: `calc(${offsetX}px - 50%)`,
-                                    opacity: 1,
-                                    rotate: 0,
-                                    scale: 1 + (isPressing ? powerLevel * 0.001 : 0)
-                                }
-                    }
-                    transition={{
-                        duration: decision ? (1.5 - (powerLevel * 0.013)) : 4,
-                        ease: decision ? (powerLevel > 50 ? "easeIn" : "easeOut") : "easeOut"
-                    }}
-                    className="absolute top-0 left-1/2"
-                    onClick={() => !decision && handleVote(true)}
-                >
-                    <Card
-                        className={`w-72 rounded-2xl shadow-xl backdrop-blur ${decision === 'yes'
-                            ? 'ring-4 ring-green-400'
-                            : decision === 'no'
-                                ? 'ring-4 ring-red-400'
-                                : 'ring-0'
-                            } ${stage === 'round1'
-                                ? 'shadow-[0_0_24px_4px_rgba(59,130,246,0.15)] shadow-blue-400/40' // blue glow for Enjoy
-                                : 'shadow-[0_0_24px_4px_rgba(34,197,94,0.18)] shadow-green-400/40' // green glow for Good
-                            }`}
-                        style={{
-                            boxShadow: isPressing ? `0 0 ${24 + powerLevel * 0.5}px ${4 + powerLevel * 0.1}px rgba(59,130,246,${0.15 + powerLevel * 0.002})` : undefined
-                        }}
-                    >
-                        <CardContent className="p-6 flex flex-col gap-2">
-                            <h2 className="text-lg font-bold text-center">{card.emoji} {card.name}</h2>
-                        </CardContent>
-                    </Card>
-                </motion.div>
-            )}
-
-            {/* Power Bar */}
-            {/* <PowerBar powerLevel={powerLevel} isVisible={isPressing} /> */}
-
-            {/* Static card description at bottom center */}
-            {card && (
-                <div className="fixed bottom-16 left-1/2 -translate-x-1/2 w-full flex justify-center pointer-events-none z-10">
-                    <div className="bg-white/80 text-gray-700 text-xl px-8 py-4 rounded-xl shadow max-w-xl text-center border border-gray-200">
-                        {card.description}
-                    </div>
-                </div>
-            )}
+                            }}
+                            className="w-full flex justify-center"
+                            onClick={() => !decision && handleVote(true)}
+                        >
+                            <Card
+                                className={`w-72 rounded-2xl shadow-xl backdrop-blur ${decision === 'yes'
+                                    ? 'ring-4 ring-green-400'
+                                    : decision === 'no'
+                                        ? 'ring-4 ring-red-400'
+                                        : 'ring-0'
+                                    } ${stage === 'round1'
+                                        ? 'shadow-[0_0_24px_4px_rgba(59,130,246,0.15)] shadow-blue-400/40'
+                                        : 'shadow-[0_0_24px_4px_rgba(34,197,94,0.18)] shadow-green-400/40'
+                                    }`}
+                                style={{
+                                    boxShadow: isPressing ? `0 0 ${24 + powerLevel * 0.5}px ${4 + powerLevel * 0.1}px rgba(59,130,246,${0.15 + powerLevel * 0.002})` : undefined
+                                }}
+                            >
+                                <CardContent padding="p-6" className="flex flex-col gap-2">
+                                    <h2 className="text-lg font-bold text-center">{card.emoji} {card.name}</h2>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                        {/* Card description directly under card */}
+                        <div className="mt-3 w-full flex justify-center">
+                            <div className={`text-gray-700 text-base px-6 py-3 rounded-xl shadow max-w-xl text-center border transition-colors duration-200 ${stage === 'round1' ? 'bg-blue-50 border-blue-200' : 'bg-green-50 border-green-200'}`}>
+                                {card.description}
+                            </div>
+                        </div>
+                        {/* Mini stack of upcoming cards - now directly under description, centered and evenly spaced */}
+                        <div className="w-full flex justify-center mt-4">
+                            <div className="flex flex-row items-center justify-between w-72 max-w-full">
+                                {[...upcomingCards].reverse().map((c, i, arr) => {
+                                    // Evenly interpolate opacity: leftmost = min, rightmost = max
+                                    const minOpacity = 0.2;
+                                    const maxOpacity = 1.0;
+                                    const opacity = arr.length === 1 ? maxOpacity : minOpacity + ((maxOpacity - minOpacity) * i) / (arr.length - 1);
+                                    return (
+                                        <motion.div
+                                            key={c.name}
+                                            className="relative flex-shrink-0 mx-1"
+                                            initial={{
+                                                scale: 1,
+                                                opacity,
+                                            }}
+                                            animate={{
+                                                scale: 1,
+                                                opacity,
+                                            }}
+                                            transition={{ duration: 0.4, ease: 'easeOut' }}
+                                            style={{
+                                                zIndex: i,
+                                                pointerEvents: 'none',
+                                            }}
+                                        >
+                                            <Card className="w-32 h-20 rounded-xl shadow-md bg-white/80">
+                                                <CardContent padding="p-1" className="text-sm text-center flex items-center justify-center h-full">{c.emoji} {c.name}</CardContent>
+                                            </Card>
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 } 
